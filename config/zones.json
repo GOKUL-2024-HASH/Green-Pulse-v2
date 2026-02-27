@@ -1,0 +1,18 @@
+{
+    "industrial": {
+        "description": "Industrial Areas",
+        "threshold_adjustment": 1.0
+    },
+    "residential": {
+        "description": "Residential, Rural and Other Areas",
+        "threshold_adjustment": 1.0
+    },
+    "roadside": {
+        "description": "Near-road monitor stations",
+        "threshold_adjustment": 0.9
+    },
+    "ecologically_sensitive": {
+        "description": "Ecologically sensitive area notified by Central Government",
+        "threshold_adjustment": 0.8
+    }
+}

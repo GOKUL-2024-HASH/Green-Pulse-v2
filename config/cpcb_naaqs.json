@@ -1,0 +1,33 @@
+{
+    "PM2.5": {
+        "annual": 40,
+        "24hr": 60,
+        "unit": "μg/m³"
+    },
+    "PM10": {
+        "annual": 60,
+        "24hr": 100,
+        "unit": "μg/m³"
+    },
+    "NO2": {
+        "annual": 40,
+        "24hr": 80,
+        "unit": "μg/m³"
+    },
+    "SO2": {
+        "annual": 50,
+        "24hr": 80,
+        "unit": "μg/m³"
+    },
+    "O3": {
+        "8hr": 100,
+        "1hr": 180,
+        "unit": "μg/m³"
+    },
+    "CO": {
+        "8hr": 2,
+        "1hr": 4,
+        "unit": "mg/m³"
+    },
+    "legal_ref": "CPCB NAAQS 2009 — Gazette B-29016/20/90/PCI-L"
+}

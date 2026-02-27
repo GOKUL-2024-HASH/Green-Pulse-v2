@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>GreenPulse Violation Report — {{ report_id }}</title>
+<style>
+  :root {
+    --green-dark: #1a5276;
+    --green-mid: #1e8449;
+    --green-light: #d5f5e3;
+    --amber: #e67e22;
+    --red: #c0392b;
+    --gray: #ecf0f1;
+    --text: #1c2833;
+    --border: #aab7b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Arial", sans-serif;
+    font-size: 11pt;
+    color: var(--text);
+    background: white;
+    padding: 20mm 18mm;
+  }
+  .page-header {
+    border-top: 6px solid var(--green-dark);
+    border-bottom: 2px solid var(--green-mid);
+    padding: 12px 0;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .page-header h1 {
+    font-size: 16pt;
+    color: var(--green-dark);
+    letter-spacing: 0.5px;
+  }
+  .page-header .meta { font-size: 9pt; color: #566573; text-align: right; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 10pt;
+  }
+  .badge-violation { background: var(--red); color: white; }
+  .badge-flag { background: var(--amber); color: white; }
+  .badge-monitor { background: #2980b9; color: white; }
+  .badge-pending { background: var(--red); color: white; }
+  .badge-dismissed { background: #7f8c8d; color: white; }
+  .badge-escalated { background: #8e44ad; color: white; }
+  section { margin-bottom: 18px; page-break-inside: avoid; }
+  section h2 {
+    font-size: 11pt;
+    color: var(--green-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+  }
+  th {
+    background: var(--green-dark);
+    color: white;
+    padding: 6px 10px;
+    text-align: left;
+  }
+  td { padding: 5px 10px; border-bottom: 1px solid var(--border); }
+  tr:nth-child(even) td { background: var(--gray); }
+  .key-value { display: flex; flex-wrap: wrap; gap: 10px; }
+  .kv-item { flex: 1 1 45%; }
+  .kv-label { font-size: 9pt; color: #566573; margin-bottom: 2px; }
+  .kv-value { font-weight: bold; }
+  .alert-box {
+    border-left: 4px solid var(--green-mid);
+    background: var(--green-light);
+    padding: 8px 12px;
+    font-size: 10pt;
+    margin-bottom: 10px;
+  }
+  .audit-hash {
+    font-family: monospace;
+    font-size: 9pt;
+    background: #f2f3f4;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    word-break: break-all;
+  }
+  .footer {
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+    padding-top: 6px;
+    font-size: 8pt;
+    color: #7f8c8d;
+    display: flex;
+    justify-content: space-between;
+  }
+  .officer-action-box {
+    border: 2px solid var(--green-dark);
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .chart-placeholder {
+    height: 60px;
+    background: var(--gray);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7f8c8d;
+    font-size: 9pt;
+  }
+</style>
+</head>
+<body>
+
+<!-- ░░ PAGE HEADER ░░ -->
+<div class="page-header">
+  <div>
+    <h1>GreenPulse 2.0 — Air Quality Violation Report</h1>
+    <p style="font-size:9pt;color:#566573;">Central Pollution Control Board | India</p>
+  </div>
+  <div class="meta">
+    Report ID: <strong>{{ report_id }}</strong><br/>
+    Generated: {{ generated_at }}<br/>
+    Status:
+    <span class="badge badge-{{ status | lower | replace('_', '-') }}">{{ status }}</span>
+  </div>
+</div>
+
+<!-- ░░ 1. VIOLATION SUMMARY ░░ -->
+<section>
+  <h2>1. Violation Summary</h2>
+  <div class="key-value">
+    <div class="kv-item">
+      <div class="kv-label">Station</div>
+      <div class="kv-value">{{ station_name }} ({{ station_id }})</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Zone Type</div>
+      <div class="kv-value">{{ station_zone | title }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Pollutant</div>
+      <div class="kv-value">{{ pollutant | upper }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Tier</div>
+      <div class="kv-value">
+        <span class="badge badge-{{ tier | lower }}">TIER {{ {'VIOLATION': 3, 'FLAG': 2, 'MONITOR': 1}.get(tier, '?') }} — {{ tier }}</span>
+      </div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Observed Value</div>
+      <div class="kv-value">{{ observed_value }} {{ unit }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Limit Value</div>
+      <div class="kv-value">{{ limit_value }} {{ unit }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Exceedance</div>
+      <div class="kv-value">+{{ exceedance_value }} {{ unit }} ({{ exceedance_percent }}%)</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Averaging Period</div>
+      <div class="kv-value">{{ averaging_period }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Window Start</div>
+      <div class="kv-value">{{ window_start }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Window End</div>
+      <div class="kv-value">{{ window_end }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ 2. READINGS TIMELINE ░░ -->
+<section>
+  <h2>2. Readings Timeline (Last {{ readings | length }} readings)</h2>
+  <table>
+    <thead>
+      <tr><th>Timestamp</th><th>{{ pollutant | upper }} ({{ unit }})</th><th>AQI</th><th>Confidence</th></tr>
+    </thead>
+    <tbody>
+      {% for r in readings %}
+      <tr>
+        <td>{{ r.timestamp }}</td>
+        <td>{{ r.value }}</td>
+        <td>{{ r.aqi or '—' }}</td>
+        <td>{{ r.confidence or '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" style="text-align:center;color:#7f8c8d;">No readings available</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<!-- ░░ 3. RULE APPLIED ░░ -->
+<section>
+  <h2>3. Rule Applied</h2>
+  <div class="alert-box">
+    <strong>{{ rule_name }}</strong><br/>
+    Legal Reference: {{ legal_reference }}<br/>
+    Rule Version: {{ rule_version }}
+  </div>
+</section>
+
+<!-- ░░ 4. METEOROLOGICAL CONTEXT ░░ -->
+<section>
+  <h2>4. Meteorological Context</h2>
+  <div class="key-value">
+    <div class="kv-item">
+      <div class="kv-label">Temperature</div>
+      <div class="kv-value">{{ met.temperature or '—' }} °C</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Humidity</div>
+      <div class="kv-value">{{ met.humidity or '—' }} %</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Wind Speed</div>
+      <div class="kv-value">{{ met.wind_speed or '—' }} m/s</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Wind Direction</div>
+      <div class="kv-value">{{ met.wind_direction or '—' }}°</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Pressure</div>
+      <div class="kv-value">{{ met.pressure or '—' }} hPa</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Temperature Inversion</div>
+      <div class="kv-value">
+        {% if met.is_inversion_likely %}<strong style="color:var(--red);">Likely</strong>{% else %}Not Detected{% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ 5. SENSOR RELIABILITY ░░ -->
+<section>
+  <h2>5. Sensor Reliability</h2>
+  <div class="key-value">
+    <div class="kv-item">
+      <div class="kv-label">Confidence Score</div>
+      <div class="kv-value">{{ sensor.confidence_score or '—' }} / 100</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Cross-validation Status</div>
+      <div class="kv-value">{{ sensor.cross_validation_status or 'N/A' }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Last Calibration</div>
+      <div class="kv-value">{{ sensor.last_calibration or 'Unknown' }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Neighbor Deviation</div>
+      <div class="kv-value">{{ sensor.neighbor_deviation or '—' }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ 6. STATION HISTORY (90 DAYS) ░░ -->
+<section>
+  <h2>6. Station History — Last 90 Days</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Period</th>
+        <th>Total Events</th>
+        <th>Violations</th>
+        <th>Flags</th>
+        <th>Monitor</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in station_history %}
+      <tr>
+        <td>{{ h.period }}</td>
+        <td>{{ h.total }}</td>
+        <td>{{ h.violations }}</td>
+        <td>{{ h.flags }}</td>
+        <td>{{ h.monitors }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" style="text-align:center;color:#7f8c8d;">No historical data</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<!-- ░░ 7. HEALTH IMPACT ░░ -->
+<section>
+  <h2>7. Health Impact Assessment</h2>
+  <div class="alert-box">
+    <strong>Informational:</strong>
+    Elevated {{ pollutant | upper }} concentrations at this level ({{ observed_value }} {{ unit }},
+    {{ exceedance_percent }}% above the {{ averaging_period }} NAAQS limit) may affect sensitive populations
+    including individuals with respiratory conditions, the elderly, and children. Sustained exceedances
+    over multiple days are associated with increased risk of cardiovascular and pulmonary health effects.
+    This assessment is factual and based on published WHO and CPCB guidance. No immediate public health
+    emergency is declared unless separately authorized by competent authority.
+  </div>
+</section>
+
+<!-- ░░ 8. OFFICER ACTION BLOCK ░░ -->
+<section>
+  <h2>8. Officer Action</h2>
+  <div class="officer-action-box">
+    {% if officer_action %}
+    <div class="key-value">
+      <div class="kv-item">
+        <div class="kv-label">Action Taken</div>
+        <div class="kv-value">
+          <span class="badge badge-{{ officer_action.action_type | lower }}">{{ officer_action.action_type }}</span>
+        </div>
+      </div>
+      <div class="kv-item">
+        <div class="kv-label">Officer</div>
+        <div class="kv-value">{{ officer_action.officer_name }}</div>
+      </div>
+      <div class="kv-item">
+        <div class="kv-label">Timestamp</div>
+        <div class="kv-value">{{ officer_action.created_at }}</div>
+      </div>
+      {% if officer_action.reason %}
+      <div class="kv-item" style="flex:1 1 100%">
+        <div class="kv-label">Reason / Notes</div>
+        <div class="kv-value">{{ officer_action.reason }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <p style="color:#7f8c8d;font-style:italic;">No officer action recorded yet.</p>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ░░ 9. AUDIT TRAIL ░░ -->
+<section>
+  <h2>9. Audit Trail</h2>
+  <div class="key-value">
+    <div class="kv-item" style="flex:1 1 100%">
+      <div class="kv-label">Ledger Entry Hash (SHA-256)</div>
+      <div class="audit-hash">{{ ledger_hash or '—' }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Ledger Entry ID</div>
+      <div class="kv-value">{{ ledger_entry_id or '—' }}</div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Chain Status</div>
+      <div class="kv-value">
+        {% if chain_valid %}
+        <span style="color:var(--green-mid);font-weight:bold;">✓ VERIFIED</span>
+        {% else %}
+        <span style="color:var(--red);font-weight:bold;">✗ CHAIN ERROR</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="kv-item">
+      <div class="kv-label">Sequence Number</div>
+      <div class="kv-value">{{ ledger_sequence or '—' }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ FOOTER ░░ -->
+<div class="footer">
+  <span>GreenPulse 2.0 — Environmental Compliance Platform</span>
+  <span>Report {{ report_id }} | {{ generated_at }}</span>
+  <span>CPCB NAAQS 2009 — Gazette B-29016/20/90/PCI-L</span>
+</div>
+
+</body>
+</html>

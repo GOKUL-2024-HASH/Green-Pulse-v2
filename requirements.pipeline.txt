@@ -1,0 +1,7 @@
+# Docker Linux pipeline requirements ONLY
+# Never install this on Windows — Pathway does not support Windows
+pathway==0.29.1
+apscheduler==3.10.4
+httpx==0.26.0
+python-dotenv==1.0.0
+psycopg2-binary==2.9.9

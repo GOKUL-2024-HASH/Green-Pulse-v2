@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+.venv/
+env/
+venv/
+ENV/
+
+# Docker
+.docker/
+
+# Environment
+.env
+.api_token
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project Specific
+alembic_error.txt
+verify_*.py
+seed_*.py
+reseed_*.py
+RUNNING.md
+tests/.pytest_cache/

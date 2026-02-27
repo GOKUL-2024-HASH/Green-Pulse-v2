@@ -1,0 +1,42 @@
+[
+    {
+        "station_id": "DL001",
+        "name": "RK Puram, Delhi",
+        "waqi_id": "7024",
+        "zone": "residential",
+        "latitude": 28.564,
+        "longitude": 77.186
+    },
+    {
+        "station_id": "DL002",
+        "name": "ITO, Delhi",
+        "waqi_id": "7021",
+        "zone": "roadside",
+        "latitude": 28.631,
+        "longitude": 77.249
+    },
+    {
+        "station_id": "DL003",
+        "name": "NSIT Dwarka, Delhi",
+        "waqi_id": "7027",
+        "zone": "residential",
+        "latitude": 28.609,
+        "longitude": 77.032
+    },
+    {
+        "station_id": "MH001",
+        "name": "Bandra, Mumbai",
+        "waqi_id": "11409",
+        "zone": "industrial",
+        "latitude": 19.055,
+        "longitude": 72.84
+    },
+    {
+        "station_id": "MH002",
+        "name": "Worli, Mumbai",
+        "waqi_id": "11410",
+        "zone": "residential",
+        "latitude": 19.017,
+        "longitude": 72.81
+    }
+]
