@@ -83,6 +83,22 @@ const LoginPage = () => {
                         {busy ? 'Authenticating...' : 'Sign In'}
                     </button>
                 </form>
+
+                <div style={{
+                    marginTop: '1.5rem',
+                    padding: '0.75rem 1rem',
+                    background: 'rgba(255,255,255,0.05)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    fontSize: '0.8rem',
+                    color: 'var(--text-muted)',
+                    lineHeight: '1.6',
+                }}>
+                    <strong style={{ color: 'var(--text-secondary)' }}>Demo credentials</strong><br />
+                    📧 admin@greenpulse.in<br />
+                    🔑 admin123
+                </div>
+
             </div>
         </div >
     );
