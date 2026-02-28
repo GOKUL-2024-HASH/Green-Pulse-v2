@@ -7,6 +7,9 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from alembic.config import Config
+from alembic import command as alembic_command
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from passlib.context import CryptContext
@@ -68,6 +71,20 @@ def _seed_data():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # ── Step 0: Run database migrations ───────────────────────────────────────
+    try:
+        alembic_cfg = Config("alembic.ini")
+        alembic_cfg.set_main_option(
+            "sqlalchemy.url",
+            os.getenv("DATABASE_URL", "postgresql://greenpulse:greenpulse123@localhost:5432/greenpulse_db")
+        )
+        alembic_command.upgrade(alembic_cfg, "head")
+        logger.info("Database migrations applied successfully")
+    except Exception as e:
+        logger.error("Migration failed: %s", e)
+        raise
+
+    # ── Step 1: Seed initial data ─────────────────────────────────────────────
     logger.info("GreenPulse API starting up — running seed")
     _seed_data()
     yield
