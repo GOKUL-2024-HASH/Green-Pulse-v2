@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-set -e
-
+#!/bin/sh
 npm install
-npm run build
+npx react-scripts build
