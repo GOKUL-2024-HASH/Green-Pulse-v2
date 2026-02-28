@@ -1,0 +1,1 @@
+"""GreenPulse — Confidence scoring package."""
