@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,12 +11,11 @@ const LoginPage = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleLogin = async ({ email: em, password: pw }) => {
         setError('');
         setBusy(true);
         try {
-            await login(email, password);
+            await login(em, pw);
             navigate('/');
         } catch (err) {
             setError('Invalid credentials. Please check your email and password.');
@@ -24,6 +23,26 @@ const LoginPage = () => {
             setBusy(false);
         }
     };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        handleLogin({ email, password });
+    };
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const em = params.get('email');
+        const pw = params.get('password');
+
+        if (em && pw) {
+            setEmail(em);
+            setPassword(pw);
+            // Auto submit after 500ms
+            setTimeout(() => {
+                handleLogin({ email: em, password: pw });
+            }, 500);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div style={{
