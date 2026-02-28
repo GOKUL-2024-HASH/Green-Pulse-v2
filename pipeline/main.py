@@ -30,8 +30,10 @@ import os
 import signal
 import sys
 import time
+import threading
 import uuid
 from datetime import datetime, timezone
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Optional
 
 logging.basicConfig(
@@ -458,6 +460,28 @@ def make_result_handler(stations_by_id, sql_engine):
     return on_window_result
 
 
+# ── Health server for Render port detection ───────────────────────────────────
+
+class HealthHandler(BaseHTTPRequestHandler):
+    """Minimal HTTP handler — returns 200 OK for Render health checks."""
+
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(b'{"status":"ok","service":"pipeline"}')
+
+    def log_message(self, format, *args):  # noqa: A002
+        pass  # Suppress default per-request access logs
+
+
+def start_health_server() -> None:
+    """Start a blocking HTTP health server on $PORT (default 8080)."""
+    port = int(os.getenv("PORT", "8080"))
+    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+    server.serve_forever()
+
+
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -465,6 +489,11 @@ def main() -> None:
     from apscheduler.schedulers.background import BackgroundScheduler
     from sqlalchemy import create_engine
     from pipeline.streaming.pathway_engine import get_engine
+
+    # ── 0. Start health server so Render detects an open port ────────────────
+    health_thread = threading.Thread(target=start_health_server, daemon=True)
+    health_thread.start()
+    logger.info("Health server started on port %s", os.getenv("PORT", "8080"))
 
     # Load station configs
     with open(STATIONS_CONFIG) as f:
