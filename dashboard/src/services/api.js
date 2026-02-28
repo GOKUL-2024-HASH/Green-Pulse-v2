@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// In development, we proxy via package.json to the API container.
-// In production (Docker), the nginx reverse proxy handles /api prefix.
-const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+// In production (Render), point to the deployed API service.
+// In local Docker dev, leave empty so nginx reverse-proxies /api/* correctly.
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://greenpulse-api.onrender.com';
 
 const api = axios.create({
     baseURL: API_BASE_URL,

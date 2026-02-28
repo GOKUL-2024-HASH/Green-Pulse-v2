@@ -17,13 +17,13 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (email, password) => {
-        // Form data for FastAPI OAuth2PasswordRequestForm
-        const formData = new FormData();
+        // OAuth2PasswordRequestForm requires application/x-www-form-urlencoded
+        const formData = new URLSearchParams();
         formData.append('username', email);
         formData.append('password', password);
 
         const response = await api.post('/api/auth/login', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
 
         const { access_token, user: userData } = response.data;
