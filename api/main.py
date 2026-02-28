@@ -104,11 +104,29 @@ async def lifespan(app: FastAPI):
         logger.error("Migration failed: %s", e)
         raise
 
-    # ── Step 1: Seed admin user (guaranteed, separate from station seed) ───────
+    # ── Step 1: Reset known passwords on every startup ────────────────────────
+    try:
+        _reset_db = SessionLocal()
+        for email, raw_pw in [
+            ("admin@greenpulse.in",   "admin123"),
+            ("officer@greenpulse.in", "officer123"),
+        ]:
+            u = _reset_db.query(User).filter(User.email == email).first()
+            if u:
+                u.hashed_password = _pwd_ctx.hash(raw_pw)
+                logger.info("Password reset for %s", email)
+        _reset_db.commit()
+    except Exception as e:
+        _reset_db.rollback()
+        logger.error("Password reset failed: %s", e)
+    finally:
+        _reset_db.close()
+
+    # ── Step 2: Seed admin user (guaranteed, separate from station seed) ───────
     logger.info("GreenPulse API starting up — seeding admin user")
     seed_admin()
 
-    # ── Step 2: Seed stations ──────────────────────────────────────────────────
+    # ── Step 3: Seed stations ──────────────────────────────────────────────────
     logger.info("Seeding stations")
     _seed_data()
     yield
