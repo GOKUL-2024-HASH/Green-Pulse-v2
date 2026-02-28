@@ -24,13 +24,12 @@ logger = logging.getLogger(__name__)
 _pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def _seed_data():
-    """Auto-seed admin user and stations on first startup."""
+def seed_admin() -> None:
+    """Guarantee the admin user exists — called explicitly in lifespan."""
     db = SessionLocal()
     try:
-        # --- Admin User ---
-        admin = db.query(User).filter(User.email == "admin@greenpulse.in").first()
-        if not admin:
+        existing = db.query(User).filter(User.email == "admin@greenpulse.in").first()
+        if not existing:
             db.add(User(
                 email="admin@greenpulse.in",
                 full_name="System Administrator",
@@ -38,14 +37,29 @@ def _seed_data():
                 role="admin",
                 is_active=True,
             ))
-            logger.info("Seeded admin user: admin@greenpulse.in / admin123")
+            db.commit()
+            logger.info("Admin user seeded successfully: admin@greenpulse.in / admin123")
         else:
-            logger.info("Admin user already exists — skipping seed")
+            logger.info("Admin user already exists — skipping")
+    except Exception as e:
+        db.rollback()
+        logger.error("Admin seed failed: %s", e)
+    finally:
+        db.close()
 
-        # --- Stations ---
+
+def _seed_data():
+    """Auto-seed stations on first startup."""
+    db = SessionLocal()
+    try:
+        # Resolve stations.json from both Docker (/app/config) and Render (./config)
         cfg_path = Path("/app/config/stations.json")
+        if not cfg_path.exists():
+            cfg_path = Path(__file__).parent.parent / "config" / "stations.json"
+
         if cfg_path.exists():
             station_cfgs = json.loads(cfg_path.read_text())
+            seeded = 0
             for s in station_cfgs:
                 exists = db.query(Station).filter(Station.id == s["station_id"]).first()
                 if not exists:
@@ -60,11 +74,17 @@ def _seed_data():
                         zone=zone,
                         status=StationStatus.online,
                     ))
-                    logger.info("Seeded station: %s", s["station_id"])
-        db.commit()
+                    seeded += 1
+            db.commit()
+            if seeded:
+                logger.info("Seeded %d stations", seeded)
+            else:
+                logger.info("All stations already exist — skipping station seed")
+        else:
+            logger.warning("stations.json not found at either path — skipping station seed")
     except Exception as e:
         db.rollback()
-        logger.error("Seed failed: %s", e)
+        logger.error("Station seed failed: %s", e)
     finally:
         db.close()
 
@@ -84,11 +104,16 @@ async def lifespan(app: FastAPI):
         logger.error("Migration failed: %s", e)
         raise
 
-    # ── Step 1: Seed initial data ─────────────────────────────────────────────
-    logger.info("GreenPulse API starting up — running seed")
+    # ── Step 1: Seed admin user (guaranteed, separate from station seed) ───────
+    logger.info("GreenPulse API starting up — seeding admin user")
+    seed_admin()
+
+    # ── Step 2: Seed stations ──────────────────────────────────────────────────
+    logger.info("Seeding stations")
     _seed_data()
     yield
     logger.info("GreenPulse API shutting down")
+
 
 
 app = FastAPI(
