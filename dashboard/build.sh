@@ -1,3 +1,3 @@
 #!/bin/sh
 npm install
-npx react-scripts build
+npx --yes react-scripts build
